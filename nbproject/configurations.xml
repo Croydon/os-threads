@@ -4,8 +4,6 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>reader.hpp</itemPath>
-      <itemPath>writer.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -15,8 +13,6 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.cpp</itemPath>
-      <itemPath>reader.cpp</itemPath>
-      <itemPath>writer.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -39,19 +35,16 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <standard>10</standard>
+          <commandlineTool>clang</commandlineTool>
+        </cTool>
         <ccTool>
           <standard>8</standard>
+          <commandLine>-pthread</commandLine>
         </ccTool>
       </compileType>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="reader.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="reader.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="writer.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="writer.hpp" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -76,14 +69,6 @@
         </asmTool>
       </compileType>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="reader.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="reader.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="writer.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="writer.hpp" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>
