@@ -20,62 +20,67 @@ sem_t readSemaphore;
 
 void reader(vector<int>& data, vector<bool>& readingDataState, const int& AMOUNT_DATA)
 {
-    // FIXME: Implement better routine when it's time for reader and writer to be executed
-    sem_wait(&readSemaphore);
-    
-    // Do not allow write operations right now
-    writeMutex.lock();
-    
-    cout << "Reader is active!" << endl;
-        
-    // We are going to search for a readable element now, lock everything in this time
-    readMutex.lock();
-    
-    bool foundReadable = false;
-    int i = 0;
-    int randomNum;
-    while(foundReadable == false && i < data.size())
+    while(true)
     {
-        randomNum = rand() % AMOUNT_DATA;
+        // FIXME: Implement better routine when it's time for reader and writer to be executed
+        sem_wait(&readSemaphore);
 
-        if(readingDataState[randomNum] == false)
+        // Do not allow write operations right now
+        writeMutex.lock();
+
+        cout << "Reader is active!" << endl;
+
+        // We are going to search for a readable element now, lock everything in this time
+        readMutex.lock();
+
+        bool foundReadable = false;
+        int i = 0;
+        int randomNum;
+        while(foundReadable == false && i < data.size())
         {
-            readingDataState[randomNum] = true;
-            
-            // We just found an element and reserved it for us, unlock other readers
-            readMutex.unlock();
-            
-            foundReadable = true;
-        }
-        i++;
-    }
-    
-    if(foundReadable == true)
-    {
-        // Output the element we got
-        cout << "A Reader found at data index: " << randomNum << " the value " << data[randomNum] << endl << endl;
+            randomNum = rand() % AMOUNT_DATA;
 
-        // We have done the reading, not lets free the element for other readers
-        readingDataState[randomNum] = false;
+            if(readingDataState[randomNum] == false)
+            {
+                readingDataState[randomNum] = true;
+
+                // We just found an element and reserved it for us, unlock other readers
+                readMutex.unlock();
+
+                foundReadable = true;
+            }
+            i++;
+        }
+
+        if(foundReadable == true)
+        {
+            // Output the element we got
+            cout << "A Reader found at data index: " << randomNum << " the value " << data[randomNum] << endl << endl;
+
+            // We have done the reading, not lets free the element for other readers
+            readingDataState[randomNum] = false;
+        }
+
+        // Allow write operations now again
+        writeMutex.unlock();
     }
-    
-    // Allow write operations now again
-    writeMutex.unlock();
-    
 }
 
 void writer(vector<int>& data)
 {
-    sem_wait(&writeSemaphore);
-    writeMutex.lock();
-
-    cout << "writer is active!" << endl;
-    for (int i = 0; i < data.size(); i++)
+    while(true)
     {
-        data[i] = rand() * rand();
-    }
+        sem_wait(&writeSemaphore);
+        writeMutex.lock();
 
-    writeMutex.unlock();
+        cout << "writer is active!" << endl;
+        for (int i = 0; i < data.size(); i++)
+        {
+            data[i] = rand() * rand();
+        }
+
+        writeMutex.unlock();
+    }
 }
 
 /*
