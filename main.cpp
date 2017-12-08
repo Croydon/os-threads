@@ -18,10 +18,16 @@ mutex readMutex;
 sem_t readSemaphore;
 
 
-void reader(vector<int>& data, vector<bool>& readingDataState)
+void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReader, int& counterWriter, const int& FORCE_CHANGE_AFTER_ROUNDS)
 {
     while(true)
     {
+        if(counterReader == FORCE_CHANGE_AFTER_ROUNDS)
+        {
+            sleep(1);
+            continue;
+        }
+
         // FIXME: Implement better routine when it's time for reader and writer to be executed
         sem_wait(&readSemaphore);
 
@@ -29,6 +35,8 @@ void reader(vector<int>& data, vector<bool>& readingDataState)
         sem_trywait(&writeSemaphore);
         // writeMutex.lock();
 
+        counterWriter = 0;
+        
         cout << "Reader " << this_thread::get_id() << " is active!" << endl;
         // sleep(1);
 
@@ -68,12 +76,21 @@ void reader(vector<int>& data, vector<bool>& readingDataState)
     }
 }
 
-void writer(vector<int>& data)
+void writer(vector<int>& data, int& counterReader, int& counterWriter, const int& FORCE_CHANGE_AFTER_ROUNDS)
 {
     while(true)
     {
+        if(counterWriter == FORCE_CHANGE_AFTER_ROUNDS)
+        {
+            sleep(1);
+            continue;
+        }
+        
+
         sem_wait(&writeSemaphore);
         writeMutex.lock();
+        
+        counterReader = 0;
 
         cout << "Writer " << this_thread::get_id() << " is active!" << endl;
         sleep(1);
@@ -94,7 +111,11 @@ int main(int argc, char** argv) {
     const int AMOUNT_READERS = 5;
     const int AMOUNT_WRITERS = 3;
     const int AMOUNT_DATA = 20;
-
+    const int AMOUNT_FORCE_CHANGE_AFTER_ROUNDS = 50;
+    
+    int counterReader = 0;
+    int counterWriter = 0;
+    
     vector<int> data(AMOUNT_DATA, 0);
     vector<bool> readingDataState(AMOUNT_DATA, false);
 
@@ -109,17 +130,16 @@ int main(int argc, char** argv) {
     // Initializing of readers
     for (int i = 0; i < AMOUNT_READERS; i++)
     {
-        thread readerThread(reader, ref(data), ref(readingDataState));
+        thread readerThread(reader, ref(data), ref(readingDataState), ref(counterReader), ref(counterWriter), ref(AMOUNT_FORCE_CHANGE_AFTER_ROUNDS));
         readerThread.detach();
     }
 
     // Initializing of writers
     for (int i = 0; i < AMOUNT_WRITERS; i++)
     {
-        thread writerThread(writer, ref(data));
+        thread writerThread(writer, ref(data), ref(counterReader), ref(counterWriter), ref(AMOUNT_FORCE_CHANGE_AFTER_ROUNDS));
         writerThread.detach();
     }
-
     
     while(true)
     {
