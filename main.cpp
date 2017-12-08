@@ -26,7 +26,8 @@ void reader(vector<int>& data, vector<bool>& readingDataState)
         sem_wait(&readSemaphore);
 
         // Do not allow write operations right now
-        writeMutex.lock();
+        sem_trywait(&writeSemaphore);
+        // writeMutex.lock();
 
         cout << "Reader " << this_thread::get_id() << " is active!" << endl;
         // sleep(1);
@@ -92,7 +93,7 @@ void writer(vector<int>& data)
 int main(int argc, char** argv) {
     const int AMOUNT_READERS = 5;
     const int AMOUNT_WRITERS = 3;
-    const int AMOUNT_DATA = 10;
+    const int AMOUNT_DATA = 20;
 
     vector<int> data(AMOUNT_DATA, 0);
     vector<bool> readingDataState(AMOUNT_DATA, false);
@@ -102,7 +103,7 @@ int main(int argc, char** argv) {
     sem_init(&writeSemaphore, 0, 0);
     
     // Set the max amount of parallel readers to the max amount of existing data elements
-    sem_init(&readSemaphore, 0, AMOUNT_DATA);
+    sem_init(&readSemaphore, 0, AMOUNT_READERS);
 
     
     // Initializing of readers
@@ -123,7 +124,13 @@ int main(int argc, char** argv) {
     while(true)
     {
         sem_post(&writeSemaphore);
-        sem_post(&readSemaphore);
+        
+        // All readers are allowed to read at the same time
+        for(int i = 0; i < AMOUNT_READERS; i++)
+        {
+            sem_post(&readSemaphore);
+        }
+        
         sleep(1);
     }
     
