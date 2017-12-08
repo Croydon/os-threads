@@ -18,7 +18,7 @@ mutex readMutex;
 sem_t readSemaphore;
 
 
-void reader(vector<int>& data, vector<bool>& readingDataState, const int& AMOUNT_DATA)
+void reader(vector<int>& data, vector<bool>& readingDataState)
 {
     while(true)
     {
@@ -39,7 +39,7 @@ void reader(vector<int>& data, vector<bool>& readingDataState, const int& AMOUNT
         int randomNum;
         while(foundReadable == false && i < data.size())
         {
-            randomNum = rand() % AMOUNT_DATA;
+            randomNum = rand() % data.size();
 
             if(readingDataState[randomNum] == false)
             {
@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
     // Initializing of readers
     for (int i = 0; i < AMOUNT_READERS; i++)
     {
-        thread readerThread(reader, ref(data), ref(readingDataState), ref(AMOUNT_DATA));
+        thread readerThread(reader, ref(data), ref(readingDataState));
         readerThread.detach();
     }
 
