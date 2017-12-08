@@ -28,7 +28,8 @@ void reader(vector<int>& data, vector<bool>& readingDataState, const int& AMOUNT
         // Do not allow write operations right now
         writeMutex.lock();
 
-        cout << "Reader is active!" << endl;
+        cout << "Reader " << this_thread::get_id() << " is active!" << endl;
+        // sleep(1);
 
         // We are going to search for a readable element now, lock everything in this time
         readMutex.lock();
@@ -73,7 +74,9 @@ void writer(vector<int>& data)
         sem_wait(&writeSemaphore);
         writeMutex.lock();
 
-        cout << "writer is active!" << endl;
+        cout << "Writer " << this_thread::get_id() << " is active!" << endl;
+        sleep(1);
+        
         for (int i = 0; i < data.size(); i++)
         {
             data[i] = rand() * rand();
@@ -121,9 +124,7 @@ int main(int argc, char** argv) {
     {
         sem_post(&writeSemaphore);
         sem_post(&readSemaphore);
-        sem_post(&readSemaphore);
-        sem_post(&readSemaphore);
-        sleep(2);
+        sleep(1);
     }
     
 
