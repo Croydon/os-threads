@@ -18,6 +18,7 @@ mutex readMutex;
 sem_t readSemaphore;
 
 
+
 void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReader, int& counterWriter, const int& FORCE_CHANGE_AFTER_ROUNDS)
 {
     
@@ -29,7 +30,7 @@ void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReade
         if(counterReader >= FORCE_CHANGE_AFTER_ROUNDS)
         {
             readMutex.unlock();
-            sleep(1);
+            sleep(2);
             continue;
             //return;
         }
@@ -47,7 +48,7 @@ void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReade
         cout << "Reader " << this_thread::get_id() << " is active!" << endl;
         
         
-        sleep(1);
+        
 
         // We are going to search for a readable element now, lock everything in this time
         //readMutex.lock();
@@ -76,7 +77,7 @@ void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReade
             readMutex.lock();
             // Output the element we got
             cout << "A Reader found at data index: " << randomNum << " the value " << data[randomNum] << endl << endl;
-            
+            sleep(1);
             // We have done the reading, not lets free the element for other readers
             readingDataState[randomNum] = false;
              readMutex.unlock();
@@ -85,7 +86,7 @@ void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReade
         sem_post(&writeSemaphore);
         sem_post(&readSemaphore);
         sleep(1);
-        //return;
+       
 
         // Allow write operations now again
         //writeMutex.unlock();
@@ -102,25 +103,27 @@ void writer(vector<int>& data, int& counterReader, int& counterWriter, const int
         if(counterWriter >= FORCE_CHANGE_AFTER_ROUNDS)
         {
             writeMutex.unlock();
-            sleep(1);
+            sleep(2);
             continue;
-            //return;
+           
             
         }
         counterWriter++;
          writeMutex.unlock();
         
-
+    
         sem_wait(&writeSemaphore);
         
         
         counterReader = 0;
 
         cout << "Writer " << this_thread::get_id() << " is active!" << endl;
-        sleep(1);
-          cout<<"point of writethred"<<endl;
+        
+         // cout<<"point of writethred"<<endl;
+         
         
         writeMutex.lock();
+         sleep(1);
         for (int i = 0; i < data.size(); i++)
         {
             data[i] = rand() * rand();
@@ -138,9 +141,9 @@ void writer(vector<int>& data, int& counterReader, int& counterWriter, const int
  * Main starting point, initalize important parts, define consts
  */
 int main(int argc, char** argv) {
-    const int AMOUNT_READERS = 5;
-    const int AMOUNT_WRITERS = 23;
-    const int AMOUNT_DATA = 20;
+    const int AMOUNT_READERS = 300;
+    const int AMOUNT_WRITERS = 30;
+    const int AMOUNT_DATA = 30;
     const int AMOUNT_FORCE_CHANGE_AFTER_ROUNDS = 10;
     
     int counterReader = 0;
