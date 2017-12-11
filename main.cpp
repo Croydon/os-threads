@@ -30,6 +30,7 @@ void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReade
         if(counterReader >= FORCE_CHANGE_AFTER_ROUNDS)
         {
             readMutex.unlock();
+            //cout<<"reader wait"<<endl;
             sleep(2);
             continue;
             //return;
@@ -41,12 +42,16 @@ void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReade
         sem_wait(&readSemaphore);
 
         // Do not allow write operations right now
-        sem_wait(&writeSemaphore);
-        // writeMutex.lock();
-
-        counterWriter = 0;
+        //sem_wait(&writeSemaphore);
+         
+       
+       
+       
+         
+     
+       
         cout << "Reader " << this_thread::get_id() << " is active!" << endl;
-        
+        usleep(750000);
         
         
 
@@ -56,34 +61,37 @@ void reader(vector<int>& data, vector<bool>& readingDataState, int& counterReade
         bool foundReadable = false;
         int i = 0;
         int randomNum;
+         readMutex.lock();
+          counterWriter = 0;
         while(foundReadable == false && i < data.size())
         {
             randomNum = rand() % data.size();
-            readMutex.lock();
+           
             if(readingDataState[randomNum] == false)
             {
                 readingDataState[randomNum] = true;
 
                 // We just found an element and reserved it for us, unlock other readers
-                readMutex.unlock();
+               
 
                 foundReadable = true;
             }
             i++;
         }
+          readMutex.unlock();
 
         if(foundReadable == true)
         {
             readMutex.lock();
             // Output the element we got
             cout << "A Reader found at data index: " << randomNum << " the value " << data[randomNum] << endl << endl;
-            sleep(1);
+            usleep(750000);
             // We have done the reading, not lets free the element for other readers
             readingDataState[randomNum] = false;
              readMutex.unlock();
         }
         
-        sem_post(&writeSemaphore);
+        //sem_post(&writeSemaphore);
         sem_post(&readSemaphore);
         sleep(1);
        
@@ -98,39 +106,44 @@ void writer(vector<int>& data, int& counterReader, int& counterWriter, const int
    
     while(true)
     {
+       
+        //cout<<counterWriter<<endl;
         writeMutex.lock();
          
         if(counterWriter >= FORCE_CHANGE_AFTER_ROUNDS)
         {
             writeMutex.unlock();
             sleep(2);
+            //cout<<"writer wait"<<endl;
             continue;
            
             
         }
         counterWriter++;
-         writeMutex.unlock();
+         //writeMutex.unlock();
         
     
-        sem_wait(&writeSemaphore);
+        //sem_wait(&writeSemaphore);
         
-        
-        counterReader = 0;
+       
+       
 
         cout << "Writer " << this_thread::get_id() << " is active!" << endl;
         
-         // cout<<"point of writethred"<<endl;
+        
          
         
-        writeMutex.lock();
-         sleep(1);
+        //writeMutex.lock();
+         usleep(750000);
+        readMutex.lock();
+        counterReader = 0;
         for (int i = 0; i < data.size(); i++)
         {
             data[i] = rand() * rand();
         }
-        
+         readMutex.unlock();
         writeMutex.unlock();
-        sem_post(&writeSemaphore);
+        //sem_post(&writeSemaphore);
         sleep(1);
        
         //return;
@@ -141,10 +154,10 @@ void writer(vector<int>& data, int& counterReader, int& counterWriter, const int
  * Main starting point, initalize important parts, define consts
  */
 int main(int argc, char** argv) {
-    const int AMOUNT_READERS = 300;
-    const int AMOUNT_WRITERS = 30;
+    const int AMOUNT_READERS = 100;
+    const int AMOUNT_WRITERS = 20;
     const int AMOUNT_DATA = 30;
-    const int AMOUNT_FORCE_CHANGE_AFTER_ROUNDS = 10;
+    const int AMOUNT_FORCE_CHANGE_AFTER_ROUNDS = 6;
     
     int counterReader = 0;
     int counterWriter = 0;
@@ -157,7 +170,7 @@ int main(int argc, char** argv) {
     sem_init(&writeSemaphore, 0, 1);
     
     // Set the max amount of parallel readers to the max amount of existing data elements
-    sem_init(&readSemaphore, 0, AMOUNT_READERS);
+    sem_init(&readSemaphore, 0, AMOUNT_DATA);
 
     
     // Initializing of readers
